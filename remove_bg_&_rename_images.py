@@ -2,19 +2,23 @@ from rembg import remove
 from PIL import Image, ImageFilter
 import os
 
-input_dir = 'dataset/train'
+# Add downloaded images directory 
+input_dir = 'dataset/images'
 image_list = os.listdir(input_dir)
 
-output_dir = 'dataset/Blurred'
+# Add output images directory
+output_dir = 'dataset/Pre_Images'
 index = 1
+
+# Add name of the class
+class_name = 'Cat'
 
 for image in image_list:
     # Store paths
     input_path = f'{input_dir}/{image}'
     output_path = 'output.png'
-    class_name = 'Scooty'
 
-    sick_image_path = f'{output_dir}/{class_name}-{index}.png'
+    processed_image_path = f'{output_dir}/{class_name}-{index}.png'
     index = index + 1
     # Open the input image
     input_image = Image.open(input_path)
@@ -32,5 +36,5 @@ for image in image_list:
     blurred_image.paste(output_image, (0, 0), output_image)
 
     # Save the resulting image
-    blurred_image.save(sick_image_path)
+    blurred_image.save(processed_image_path)
     print(f'{sick_image_path} Done!')
