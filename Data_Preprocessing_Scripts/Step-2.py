@@ -1,98 +1,63 @@
 import os
-import json
 import cv2
 import random
-import re
 
 
-def get_image_metadata(image_path):
-    # Open the image to get its dimensions
+def resize(image_path):
     image = cv2.imread(image_path)
     height, width, _ = image.shape
-
-    # Bounding box calculations
-    x = random.randint(10, 50)
-    y = random.randint(10, 50)
-    h = random.randint(height - 50, height)
-    w = random.randint(width - 50, width)
-    bbox = [x, y, h, w]
-    return width, height, bbox
+    new_image = cv2.resize(image, (300, 300))
+    return new_image
 
 
-# update this category according to our classes
-categories = [
-    {"id": 1, "name": "scooty"},
-    {"id": 2, "name": "bike"}
-]
+def augmenting_images(image_path):
+    image = cv2.imread(image_path)
+    chooser = random.randint(0, 1)
+    # operations in order are vertical_flip and brightness, horizontal_flip and contrast
+    if chooser:
+        chooser2 = random.randint(0, 1)
+        center = (image.shape[0] // 2, image.shape[1] // 2)
+        if chooser2 == 0:
+            alpha = random.uniform(0.5, 2.0)
+            beta = random.randint(-50, 50)
+            brightness_varied_image = cv2.convertScaleAbs(image, alpha=alpha, beta=beta)
+            final_image = cv2.flip(brightness_varied_image, 0)
+            return final_image
+        elif chooser2 == 1:
+            alpha = random.uniform(0.5, 2.0)
+            contrast_image = cv2.convertScaleAbs(image, alpha=alpha)
+            final_image = cv2.flip(contrast_image, 1)
+            return final_image
 
 
-# Match filename for category name to get category ID
-def get_category_id(filename):
-    category_id = None
-    match = re.match(r"([a-zA-Z]+)-\d+", filename)
-    if match:
-        name = match.group(1)
+def main():
+    # Example usage: iterate through a directory of images
+    parent_directory = 'Pretraining_Dataset_Images/images'
+    output_dir = 'Preprocessed_Dataset_Images'
 
-        # Find category ID based on name
-        for category in categories:
-            if category["name"] == name:
-                category_id = category["id"]
-                break
-    return category_id
+    # Ensure output directory exists
+    os.makedirs(output_dir, exist_ok=True)
 
+    # Iterate through each image in the directory
+    for class_name in os.listdir(parent_directory):
+        class_dir = os.path.join(parent_directory, class_name)
 
-def create_coco_annotations(images_dir, annotations_data):
-    coco_format = {"images": [], "annotations": [], "categories": categories}
+        # Skip files in the parent directory
+        if not os.path.isdir(class_dir):
+            continue
+        for filename in os.listdir(class_dir):
+            if filename.endswith('.jpg') or filename.endswith('.png') or filename.endswith('.jpeg'):
+                image_path = os.path.join(class_dir, filename)
+                image = cv2.imread(image_path)
+                # Apply augmentation
+                augmented_image = augmenting_images(image)
 
-    # Dummy categories
+                # Save augmented image
+                output_path = os.path.join(output_dir, f'{class_name}_{filename}')
+                cv2.imwrite(output_path, augmented_image)
 
-    image_id = 1
-    annotation_id = 1
-
-    for filename in os.listdir(images_dir):
-        if filename.endswith(('.png', '.jpg', '.jpeg')):
-            image_path = os.path.join(images_dir, filename)
-            width, height, bbox = get_image_metadata(image_path)
-
-            # Add image info
-            coco_format["images"].append({
-                "id": image_id,
-                "width": width,
-                "height": height,
-                "file_name": filename
-            })
-
-            # Create dummy annotation data (replace with actual data retrieval)
-            # Example bounding box
-            category_id = get_category_id(filename)  # Example category id
-
-            coco_format["annotations"].append({
-                "id": annotation_id,
-                "image_id": image_id,
-                "category_id": category_id,
-                "bbox": bbox,
-                "area": bbox[2] * bbox[3]  # width * height
-            })
-
-            image_id += 1
-            annotation_id += 1
-
-    return coco_format
-
-
-def main(images_dir, output_json):
-    coco_annotations = create_coco_annotations(images_dir)
-
-    # Write to JSON file
-    with open(output_json, 'w') as json_file:
-        json.dump(coco_annotations, json_file, indent=4)
+                print(f'Saved augmented image: {output_path}')
 
 
 if __name__ == "__main__":
-    # Input images directory
-    images_dir = 'dataset/test'
-
-    # Output annotation file directory
-    output_json = 'dataset/test/annotations.json'
-
-    main(images_dir, output_json)
+    main()
