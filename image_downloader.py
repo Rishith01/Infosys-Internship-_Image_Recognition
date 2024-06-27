@@ -2,7 +2,7 @@
 from bing_image_downloader import downloader
 
 # add your class name
-class_name = 'chair'
+class_name = 'car'
 
 # no of photos to download
 no_of_photos = 50
