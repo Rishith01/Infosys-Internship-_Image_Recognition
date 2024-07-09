@@ -1,0 +1,7 @@
+
+path: YOLO_dataset
+train: .
+val: .
+
+nc: 10
+names: [Apple, Bicycle, Book, Bottle, Cat, Chair, Clock, Dog, Laptop, Television]
