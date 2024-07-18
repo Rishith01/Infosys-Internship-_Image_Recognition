@@ -2,4 +2,4 @@
 
 
 ## Steps to use:-
-# - Clone the repositiry branch  
+- Clone the repositiry branch  
