@@ -1,9 +1,9 @@
-# Vision AI - Object detection and Training System
+# Vision AI - Object Detection and Training System
 
 
-# Steps to use:-
+# Steps to Use:-
 - Clone the repositiry branch : -
-    git clone https://github.com/Rishith01/Infosys-Internship-_Image_Recognition.git main
+    git clone -b main https://github.com/Rishith01/Infosys-Internship-_Image_Recognition.git
 
 - Go to the cloned directory
 
