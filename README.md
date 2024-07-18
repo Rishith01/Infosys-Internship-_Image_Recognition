@@ -6,7 +6,7 @@
     git clone https://github.com/Rishith01/Infosys-Internship-_Image_Recognition.git main
 
 - Go to the cloned directory
-- 
+
 - Download requirements:-
     pip install -r requirements.txt
 
