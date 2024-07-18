@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="/static/svgs/logo.png" type="image/x-icon">
+    <title>Vision AI | Detection</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A==" crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <style>
+        body {
+            font-family: 'Poppins';
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .loader {
+            --c: no-repeat linear-gradient(#126de3 0 0);
+            background: var(--c), var(--c), #4d4e4f;
+            background-size: 60% 100%;
+            animation: l16 3s infinite;
+        }
+
+        @keyframes l16 {
+            0% {
+                background-position: -150% 0, -150% 0
+            }
+
+            66% {
+                background-position: 250% 0, -150% 0
+            }
+
+            100% {
+                background-position: 250% 0, 250% 0
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-[#1A1A1A] text-gray-300 tracking-widest">
+
+    <img src="/static/svgs/detection-lg.svg" id="responsiveImage" alt="" class="w-full" />
+
+    <div class="flex flex-col items-center">
+        <div class="lg:w-8/12 w-10/12 relative lg:-top-16 -top-2">
+            <p class="px-2 pb-2 lg:text-lg px-5 text-sm text-gray-400">Search for Existing Model</p>
+                <div class="flex items-center justify-between bg-zinc-700 pr-5 rounded-lg">
+                    <input id="model-input" class='lg:text-xl text-md w-full p-2 focus:outline-none rounded-lg bg-zinc-700 px-5' type="text" placeholder="Enter Model Name" name="model-input">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                </div>
+            <div id="result-box" class="bg-gray-600 mt-2 px-2 rounded-xl w-full absolute z-50"></div>
+        </div>
+
+        <div class="flex justify-evenly items-center mt-10 lg:gap-10 lg:w-3/4 w-full relative lg:-top-10 -top-5">
+            <div id="uploadImg"
+                class="w-1/4 bg-gray-700 shadow-md shadow-blue-900 rounded-2xl hover:bg-gray-600 transition-all active:scale-95 py-5 cursor-pointer ">
+                <form id="uploadImgForm" enctype="multipart/form-data" method="post" action="{% url 'detection_page' %}"
+                    class="flex flex-col items-center gap-3">
+                    {% csrf_token %}
+                    <img class="lg:w-10 w-8" alt="" src="/static/svgs/upload_icon.png
+                    ">
+                    <span class="lg:text-xl text-sm font-medium">Image</span>
+                    <input type="file" id="imageInput" accept="image/*" class="hidden" name="file">
+                </form>
+            </div>
+
+            <div id="uploadVid"
+                class="w-1/4 bg-gray-700 shadow-md shadow-blue-900 rounded-2xl hover:bg-gray-600 transition-all active:scale-95 py-5 cursor-pointer ">
+                <form id="uploadVidForm" enctype="multipart/form-data" method="post" action="{% url 'detection_page' %}"
+                    class="flex flex-col items-center gap-3">
+                    {% csrf_token %}
+                    <img class="lg:w-12 w-8" alt="" src="/static/svgs/video-camera.png
+                    ">
+                    <span class="lg:text-xl text-sm font-medium">Video</span>
+                    <input type="file" id="videoInput" accept="video/*" class="hidden" name="file">
+                </form>
+            </div>
+
+            <button id="camera-button" onclick=window.location.href='/live-camera-feed/'
+                class="bg-gray-700 shadow-md shadow-blue-900 flex flex-col items-center gap-3 py-5 w-1/4 rounded-2xl hover:bg-gray-600 transition-all active:scale-95">
+                <img class="lg:w-10 w-8" alt="" src="/static/svgs/camera_icon.png" />
+                <span class="lg:text-xl text-sm font-medium">Camera</span>
+            </button>
+        </div>
+        <div id="model-info" class=" flex flex-col items-start"></div>
+        <div id="inputs" class="hidden flex flex-col items-center w-10/12 m-20 gap-10">
+            <div id="previewFrame" class="flex justify-center lg: lg:max-w-1/3 max-w-10/12 max-h-96 max-h-80">
+            </div>
+            <div id="file" class="flex justify-between items-center lg:gap-10 gap-3 px-5 p-2 rounded-lg bg-gray-800">
+                <p id="filename" class="lg:text-lg text-md"></p>
+                <i class="fa-solid fa-trash lg:fa-xl fa-lg active:scale-95 transition-all cursor-pointer" id="removeFile"></i>
+            </div>
+            <button id="detectBtn"
+                class="bg-blue-700 rounded-lg flex justify-center items-center gap-5 py-2 lg:w-1/3 w-10/12 active:scale-95 transition-all">
+                <span class="lg:text-xl text-lg tracking-widest font-bold text-white">Detect</span>
+                <i class="fa-solid fa-wand-magic-sparkles"></i>
+            </button>
+        </div>
+
+        <div class="w-10/12 flex flex-col items-center mt-3 mb-10 hidden" id="loaderbox">
+            <p>Detecting...</p>
+            <div class="loader w-10/12 h-2 rounded m-5 "></div>
+            <p class="lg:text-lg text-sm text-center">This won't take too long. Please wait</p>
+        </div>
+        <p id="error-response" class="text-lg text-gray-400"></p>
+        <div id="outputs" class="w-full flex flex-col items-center hidden">
+            <div class="w-10/12 flex flex justify-start items-center gap-5">
+                <img src="/static/svgs/ai_logo.png" alt="" class="h-10">
+                <p class="text-3xl font-black text-blue-500 tracking-wides">AI Detections</p>
+            </div>
+            
+            <div id="outputPreview" class="lg: lg:max-w-1/3 max-w-10/12 max-h-96 max-h-80 flex justify-center lg:mt-10 lg:mb-5 my-3"></div>
+
+            <div id="totalDetect" class="lg:w-1/2 w-10/12 lg:m-5 m-2 text-center font-bold text-xl text-blue-300"></div>
+            <div id="detectionsContainer" class='text-center lg:mx-10 mx-5'></div>
+        </div>
+
+        <div id="dnload" class="hidden bg-gray-700 px-3 flex justify-center items-center p-2 rounded-lg mt-5 mb-10 lg:gap-5 gap-2">
+            <i class="fa-solid fa-download"></i>
+            <a id="download-output" class="text-center lg:text-xl text-md" download></a>
+        </div>
+        <div class="flex items-center justify-center gap-1 rounded my-10 bg-gray-800 p-2">
+            <a class="lg:text-xl text-md" href="/train/">Explore Model Training</a>
+            <i class="fa-solid fa-arrow-right-long"></i>
+        </div>
+    </div>
+
+    <script>
+        function setImageSrc() {
+            const image = document.getElementById('responsiveImage');
+            if (window.innerWidth <= 768) {
+                image.src = '/static/svgs/detection-sm.svg';
+            } else {
+                image.src = '/static/svgs/detection-lg.svg';
+            }
+        }
+
+        window.onload = setImageSrc;
+        window.onresize = setImageSrc;
+
+        let modelnames = []
+        let modelDescp = []
+
+        async function fetchJson(){
+            try{
+                const response = await fetch('/static/models.json');
+                const jsonObject = await response.json();
+
+                modelnames = jsonObject.model_names;
+                modelDescp = jsonObject.model_description;
+            }
+            catch(error){
+                console.log(error)
+            }
+        }
+        fetchJson()
+
+        const modelInput = document.getElementById('model-input');
+        const resultBox = document.getElementById('result-box');
+        modelInput.onkeyup = function(){
+            let nameResult = []
+            let descResult = []
+            let input = modelInput.value
+
+            if(input.length){
+                nameResult = modelnames.filter((keyword, index) => {
+                    if(keyword.toLowerCase().includes(input.toLowerCase())){
+                        descResult.push(modelDescp[index])
+                    }
+                    return keyword.toLowerCase().includes(input.toLowerCase())
+                });
+                
+            }
+
+            displayResults(nameResult, descResult);
+
+            if(!nameResult.length && input.length>0){
+                resultBox.innerHTML = `<div class='bg-gray-600 text-lg p-3 rounded-lg mt-1'>No model found</div>`
+            }
+        }
+
+        function displayResults(nameResult, descResult){
+            const content = nameResult.map((item, index) => {
+                return `
+                    <div class="my-1 bg-gray-600 flex lg:flex-row flex-col lg:items-center items-start p-3 lg:gap-5 gap-1 cursor-pointer hover:bg-gray-700 w-full rounded-lg" onclick=setInput(this)>
+                        <span class="font-bold text-lg">${item}</span>
+                        <span class="font-thin text-sm">${descResult[index]}</span>
+                    </div>
+                `
+            })
+            resultBox.innerHTML = "<div>" + content.join('') + "</div>"
+            
+        }
+        let selectedModel = null
+        function setInput(item){
+            let val = item.firstElementChild.textContent;
+            modelInput.value = val
+            resultBox.innerHTML = ''
+
+            selectedModel = val
+            let index = modelnames.indexOf(selectedModel)
+            
+            document.getElementById('model-info').innerHTML = `
+                <span class='lg:text-2xl text-lg font-semibold text-gray-400'>${modelnames[index]}</span>
+                <span class='lg:text-xl text-md font-regular text-gray-400'>${modelDescp[index]}</span>
+            `
+            
+
+        }
+        let fileChosen = false;
+        document.getElementById('uploadImg').addEventListener('click', () => {
+            document.getElementById('imageInput').click();
+        })
+        document.getElementById('uploadVid').addEventListener('click', () => {
+            document.getElementById('videoInput').click();
+        })
+
+        function checkFileChosen() {
+            if (fileChosen) {
+                
+                document.getElementById('inputs').classList.remove('hidden');
+                document.getElementById('outputs').classList.add('hidden');
+                document.getElementById('dnload').classList.add('hidden');
+                document.getElementById('loaderbox').classList.add('hidden');
+            }
+            else {
+                
+                document.getElementById('inputs').classList.add('hidden');
+            }
+        }
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 500);
+        }
+
+        let file = null;
+        let fileType = null;
+        let pressDetection = false;
+        let backendResponse = false;
+        function handleFileSelection(event, type) {
+            file = event.target.files[0];
+            if (file) {
+                fileChosen = true;
+                fileType = type;
+                checkFileChosen();
+                backendResponse = false;
+                checkBackendresponse();
+                const fileURL = URL.createObjectURL(file);
+                const previewFrame = document.getElementById('previewFrame');
+
+                if (fileType === 'img') {
+                    previewFrame.innerHTML = `<img src=${fileURL} class='lg:w-8/12 w-10/12 rounded-lg'/>`;
+                } else {
+                    previewFrame.innerHTML = `
+                    <video class='lg:w-8/12 w-full rounded-lg' autoplay controls>
+                        <source src="${fileURL}" type="video/mp4">
+                    </video>`;
+                }
+
+                document.getElementById('filename').textContent = file.name;
+                scrollToBottom();
+            }
+        }
+
+        document.getElementById('imageInput').addEventListener('change', (event) => handleFileSelection(event, 'img'));
+        document.getElementById('videoInput').addEventListener('change', (event) => handleFileSelection(event, 'vid'));
+
+        if (!pressDetection) {
+            document.getElementById('removeFile').addEventListener('click', () => {
+                fileChosen = false;
+                fileType = null;
+                checkFileChosen();
+            })
+        }
+
+        function checkPressDetection() {
+            if (pressDetection) {
+                document.getElementById('loaderbox').classList.remove('hidden');
+            }
+            else {
+                document.getElementById('loaderbox').classList.add('hidden');
+            }
+            scrollToBottom();
+        }
+
+        function checkBackendresponse() {
+            if (backendResponse) {
+                document.getElementById('outputs').classList.remove('hidden');
+            }
+            else {
+                document.getElementById('outputs').classList.add('hidden');
+            }
+        }
+        document.getElementById('detectBtn').addEventListener('click', handleDetection);
+        
+        async function handleDetection() {
+            pressDetection = true;
+            checkPressDetection();
+    
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('model', modelInput.value)
+
+            try {
+                const response = await fetch('/detect/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+
+                const data = await response.json();
+                backendResponse = true;
+                checkBackendresponse();
+                if (fileType === 'img') {
+                    handleImageResponse(data);
+                } else {
+                    handleVideoResponse(data);
+                }
+            } catch (error) {
+                document.getElementById('error-response').textContent = 'There was a problem with the fetch operation:';
+            } finally {
+                pressDetection = false;
+                checkPressDetection();
+            }
+            scrollToBottom();
+        }
+        function handleImageResponse(data) {
+            document.getElementById('outputPreview').innerHTML = `
+            <img src="/${data.annotated_image}" class="lg:w-8/12 w-full rounded-lg"/>
+        `;
+            document.getElementById('totalDetect').textContent = `${data.detection_results.class_names.length} Objects Detected`;
+
+            let outputHTML = '';
+            data.detection_results.class_names.forEach((className, index) => {
+                const confidence = (data.detection_results.scores[index] * 100).toFixed(2);
+                outputHTML += `<div class='my-2 text-center'>
+            <span class='lg:text-xl text-center text-md text-white'>Object ${index + 1} : ${className} with ${confidence}% confidence</span><br>
+        </div>`;
+            });
+            document.getElementById('detectionsContainer').innerHTML = outputHTML;
+            document.getElementById('download-output').href = `/${data.annotated_image}`;
+            document.getElementById('download-output').textContent = 'Download Detected Image';
+            document.getElementById('dnload').classList.remove('hidden');
+        }
+
+        function handleVideoResponse(data) {
+            document.getElementById('outputPreview').classList.remove('hidden');
+            if (data.annotated_video) {
+                document.getElementById('outputPreview').innerHTML = `
+                    <video class='lg:w-8/12 w-10/12 rounded-lg my-10' autoplay controls>
+                    <source src="/${data.annotated_video}" type="video/mp4">
+                    </video>`;
+            }
+            if (data.detection_results) {
+                document.getElementById('totalDetect').textContent = `${data.detection_results.length} Types of Object Detected`;
+                let outputHTML = '';
+                data.detection_results.forEach((classes, index) => {
+                    outputHTML += `<div class='my-2 text-center'>
+                        <span class='text-center'>${classes}</span>
+                    </div>`;
+                })
+                document.getElementById('detectionsContainer').innerHTML = outputHTML;
+            }
+            document.getElementById('download-output').href = `/${data.annotated_video}`;
+            document.getElementById('download-output').textContent = 'Download Detected Video';
+            document.getElementById('dnload').classList.remove('hidden');
+
+        }
+    </script>
+</body>
+
+</html>

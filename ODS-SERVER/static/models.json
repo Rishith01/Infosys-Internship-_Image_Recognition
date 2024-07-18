@@ -1,0 +1,12 @@
+{
+    "model_names": [
+        "yolov8n",
+        "yolov8s",
+        "yolov8m"
+    ],
+    "model_description": [
+        "Nano level model for YOLOv8",
+        "Small level model for YOLOv8",
+        "Medium level model for YOLOv8"
+    ]
+}

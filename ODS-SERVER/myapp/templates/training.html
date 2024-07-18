@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="/static/svgs/logo.png" type="image/x-icon">
+    <title>Vision AI | Training</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+        integrity="sha512-SnH5WK+bZxgPHs44uWIX+LLJAJ9/2PkPKZ5QiAj6Ta86w+fsb2TkcmfRyVX3pBnMFcV7oQPJkl9QevSCWr3W6A=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <style>
+        body {
+            font-family: 'Poppins';
+        }
+
+        body::-webkit-scrollbar {
+            display: none;
+        }
+
+        .loader {
+            --c: no-repeat linear-gradient(#126de3 0 0);
+            background: var(--c), var(--c), #4d4e4f;
+            background-size: 60% 100%;
+            animation: l16 3s infinite;
+        }
+
+        @keyframes l16 {
+            0% {
+                background-position: -150% 0, -150% 0
+            }
+
+            66% {
+                background-position: 250% 0, -150% 0
+            }
+
+            100% {
+                background-position: 250% 0, 250% 0
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-[#1A1A1A]">
+    <img src="/static/svgs/training-lg.svg" id="responsiveImage" alt="" class="w-full" />
+
+    <div class="flex flex-col items-center">
+        <p class="lg:text-3xl text-xl font-black text-gray-300 lg:w-8/12 w-10/12 relative lg:-top-5">Add Objects</p>
+        <form class="flex flex-col items-center justify-center gap-5 lg:w-2/3 w-10/12 m-5" id="object-form"
+            enctype="multipart/form-data">
+            {% csrf_token %}
+            <label class="flex flex-col items-center w-full" for="class-name">
+                <p class="w-full lg:text-lg text-sm text-gray-400 py-2 px-1">Enter Object Name</p>
+                <input id="class-input" type="text" name="class-name" placeholder="For example: Apple"
+                    class="bg-zinc-700 lg:py-2 lg:px-5 px-3 py-1 rounded-lg text-white lg:text-xl text-md w-full focus:outline-none focus:bg-zinc-700 focus:text-white">
+            </label>
+            <p class="lg:text-xl text-sm text-gray-400 font-regular py-3 text-left w-full">Select images where objects
+                are well-fitted with clear backgrounds.</p>
+            <div id="image-upload" class="bg-zinc-700 w-full rounded-xl cursor-pointer active:scale-95 transition-all">
+                <div class="flex flex-col items-center justify-center gap-5 lg:py-5 py-2">
+                    <img src="/static/svgs/upload_icon.png" class="lg:h-16 h-12 opacity-75" alt="">
+                    <input id="image-input" type="file" accept="image/*" multiple name="class-image"
+                        class="bg-zinc-700 py-2 px-5 rounded-lg text-white w-full hidden">
+                    <p class="text-gray-300 lg:text-xl text-md">Select Images</p>
+                </div>
+            </div>
+
+            <div id="gallery"
+                class="flex lg:justify-center justify-evenly items-center lg:gap-5 gap-1 lg:w-1/2 w-screen hidden my-5">
+                <span
+                    class="rounded-full lg:text-5xl text-4xl font-black text-blue-600 active:scale-95 transition-all cursor-pointer select-none"
+                    id="prev"><i class="fa-solid fa-circle-left"></i></span>
+                <img class="lg:w-96 w-60 lg:h-96 h-60" id="img-preview">
+                <span
+                    class="rounded-full lg:text-5xl text-4xl font-black text-blue-600 active:scale-95 transition-all cursor-pointer select-none flex justify-center items-center"
+                    id="next"><i class="fa-solid fa-circle-right"></i></span>
+            </div>
+
+            <div class="flex justify-center items-center lg:gap-5 gap-3 bg-gray-700 lg:pl-5 pl-3 pr-3 py-2 rounded hidden lg:m-5 m-2"
+                id="filenames">
+                <p id="img-name" class="text-gray-300 text-center lg:text-xl text-md"></p>
+                <i class="fa-solid fa-trash fa-xl text-white active:scale-95 transition-all cursor-pointer"
+                    id="removeFile"></i>
+            </div>
+
+            <p id="response-message" class="text-gray-300 text-lg font-regular p-5 hidden"></p>
+            <button id="object-submit" type="submit"
+                class="bg-blue-700 text-white lg:w-1/2 w-full py-2 lg:my-5 my-3 rounded-lg active:scale-95 transition-all lg:text-xl text-lg font-regular tracking-widest">
+                <i class="fa-solid fa-plus fa-md"></i> Add Object</button>
+        </form>
+
+
+
+        <div id="process-info" class="hidden my-5 flex flex-col items-center lg:w-8/12 w-10/12">
+            <div class="w-screen h-[1px] bg-gray-700 mb-10"></div>
+            <p class="lg:text-3xl text-xl font-bold text-gray-200 w-full text-center">Transform and Train AI</p>
+
+            <p class="text-gray-400 lg:text-xl text-md mt-10">Preprocess images for AI models.</p>
+            <button id="process-image"
+                class="py-2 lg:w-1/2 w-full bg-blue-700 text-white rounded-lg lg:my-10 my-5 active:scale-95 transition-all lg:text-xl text-lg tracking-widest"><i
+                    class="fa-solid fa-gears"></i> Process
+                Images
+            </button>
+        </div>
+
+        <div class="w-10/12 flex flex-col items-center mt-3 mb-10 hidden" id="loaderbox-process">
+            <p class="text-gray-300 lg:text-xl text-lg">Processing Images...</p>
+            <div class="loader w-10/12 h-2 rounded m-5"></div>
+            <p class="text-gray-300 lg:text-xl text-lg">This may take some time. Please wait</p>
+        </div>
+        <p id="process-response" class="hidden text-xl text-gray-400 pt-3 pb-5"></p>
+
+        <div id="train-info" class="hidden flex flex-col items-center gap-4 lg:w-8/12 w-3/4">
+            <p class="text-gray-400 lg:text-xl text-md">Train AI Model</p>
+            <button id="train"
+                class="py-2 lg:w-1/2 w-full mb-5 bg-blue-700 text-white rounded-lg active:scale-95 transition-all lg:text-xl text-lg tracking-widest">
+                <i class="fa-solid fa-wand-sparkles"></i> Train AI</button>
+        </div>
+
+        <div class="w-10/12 flex flex-col items-center mt-3 mb-10 hidden" id="loaderbox-train">
+            <p class="text-gray-300 lg:text-xl text-lg">Training AI...</p>
+            <div class="loader w-10/12 h-2 rounded m-5"></div>
+            <p class="text-gray-300 lg:text-xl text-lg">This may take some time. Please wait</p>
+        </div>
+        <p id="train-response" class="hidden text-xl text-gray-400 py-3"></p>
+
+        <div id="train-success" class="hidden flex flex-col items-center gap-3 my-5">
+            <div class="w-screen h-[1px] bg-gray-700 mb-10"></div>
+            <h1 class="lg:text-2xl text-xl text-blue-400 font-bold"><i class="fa-regular fa-circle-check"></i> Training
+                Successful</h1>
+
+            <img id="result-metrics" class="lg:w-8/12 w-10/12 mt-5">
+            <p class="text-gray-400 mb-5">Training Result Metrics</p>
+
+            <div class="w-screen h-[1px] bg-gray-700 mb-10"></div>
+            <h1 class="lg:text-3xl text-lg text-gray-300 font-bold">Test your Model</h1>
+            <button id="test-img"
+                class=" active:scale-95 transition-all flex items-center justify-center text-white gap-3 lg:text-xl text-lg bg-gray-700 py-2 px-5 rounded-lg mt-10">
+                <i class="fa-regular fa-image"></i>
+                <p>Select Test Image</p>
+                <input type="file" accept="image/*" name="test-ip" id="test-ip" class="hidden">
+            </button>
+
+            <img id="test-ip-img" class="lg:w-1/4 w-3/4 my-5" alt="">
+
+            <button id="start-test"
+                class="bg-blue-700 px-3 py-2 text-white rounded-lg active:scale-95 transition-all">Test Model</button>
+
+            <img id="test-op-img" class="lg:w-1/2 w-3/4 my-5" alt="">
+
+            <p id="test-response" class="text-gray-400"></p>
+
+        </div>
+
+        <div id="upload-model" class="hidden lg:w-8/12 w-10/12 flex flex-col items-center gap-3">
+            <h1 class="lg:text-2xl text-lg text-gray-200">Upload Model</h1>
+            <p class="text-gray-400 text-left w-full">Enter Model Name</p>
+            <input class="w-full bg-zinc-600 p-2 focus:outline-none rounded-lg text-white" type="text" name="name"
+                id="model-name">
+            <p class="text-gray-400 text-left w-full">Enter Model Description</p>
+            <textarea maxlength="200"
+                class="w-full h-16 bg-zinc-600 p-2 focus:outline-none rounded-lg text-white resize-none" name="desc"
+                id="model-desc"></textarea>
+
+            <button id="upload-model-btn"
+                class="bg-blue-700 lg:w-1/2 w-3/4 px-3 py-2 rounded-lg text-white lg:text-xl text-lg my-5">Upload
+                Model</button>
+
+            
+        </div>
+        <p id="upload-response" class="text-lg: text-gray-400"></p>
+        <div class="flex items-center justify-center gap-5 rounded my-10 bg-gray-800 p-2 text-gray-300">
+            <i class="fa-solid fa-arrow-left-long"></i>
+            <a class="" href="/detect/">Explore Detection</a>
+        </div>
+    </div>
+
+    <script>
+        function setImageSrc() {
+            const image = document.getElementById('responsiveImage');
+            if (window.innerWidth <= 768) {
+                image.src = '/static/svgs/training-sm.svg';
+            } else {
+                image.src = '/static/svgs/training-lg.svg';
+            }
+        }
+
+
+        let objectAdded = false;
+        function processButton() {
+            if (objectAdded) {
+                document.getElementById('process-info').classList.remove('hidden');
+            }
+            else {
+                document.getElementById('process-info').classList.add('hidden');
+            }
+        }
+
+        let objectProcessed = false;
+        function trainButton() {
+            if (objectAdded) {
+                document.getElementById('train-info').classList.remove('hidden');
+            }
+            else {
+                document.getElementById('train-info').classList.add('hidden');
+            }
+        }
+
+        window.onload = setImageSrc;
+        window.onresize = setImageSrc;
+
+        function scrollToBottom() {
+            setTimeout(() => {
+                window.scrollTo({
+                    top: document.body.scrollHeight,
+                    behavior: 'smooth'
+                });
+            }, 500);
+        }
+
+        let filesArray = [];
+        let index = 0;
+        window.onload = processButton
+        window.onload = trainButton
+
+        document.getElementById('image-upload').addEventListener('click', () => {
+            filesArray = [];
+            index = 0;
+            document.getElementById('image-input').click();
+            document.getElementById('gallery').classList.add('hidden');
+            document.getElementById('filenames').classList.add('hidden');
+        });
+
+        document.getElementById('image-input').addEventListener('change', () => {
+            const input = document.getElementById('image-input');
+            document.getElementById('gallery').classList.remove('hidden');
+            document.getElementById('filenames').classList.remove('hidden');
+            for (let i = 0; i < input.files.length; i++) {
+                filesArray.push(input.files[i]);
+            }
+            document.getElementById('img-preview').src = URL.createObjectURL(filesArray[0]);
+            document.getElementById('img-name').textContent = filesArray[0].name;
+            scrollToBottom();
+        });
+
+        function displayImages(index, filesArray) {
+            if (filesArray[index]) {
+                let fileURL = URL.createObjectURL(filesArray[index]);
+                document.getElementById('img-preview').src = fileURL;
+                document.getElementById('img-name').textContent = filesArray[index].name;
+            } else {
+                document.getElementById('filenames').classList.add('hidden');
+                document.getElementById('gallery').classList.add('hidden');
+            }
+        }
+
+        document.getElementById('next').addEventListener('click', () => {
+            index++;
+            if (index == filesArray.length) index = 0;
+            displayImages(index, filesArray);
+        });
+
+        document.getElementById('prev').addEventListener('click', () => {
+            index--;
+            if (index == -1) index = filesArray.length - 1;
+            displayImages(index, filesArray);
+        });
+
+        document.getElementById('removeFile').addEventListener('click', () => {
+            if (filesArray.length > 0) {
+                filesArray.splice(index, 1);
+                if (index >= filesArray.length) {
+                    index = filesArray.length - 1;
+                }
+                displayImages(index, filesArray);
+            }
+        });
+
+
+
+        document.getElementById('object-form').addEventListener('submit', async (event) => {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            filesArray.forEach((file, index) => {
+                formData.append('class-image', file);
+            });
+            const className = formData.get('class-name').trim();
+            const responseMessage = document.getElementById('response-message');
+
+
+
+            if (className !== '' && filesArray.length != 0) {
+                try {
+                    const response = await fetch('/train/submit-class/', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                        },
+                        body: formData,
+                    });
+                    const message = await response.json();
+
+                    document.getElementById('class-input').value = '';
+                    filesArray = [];
+                    index = 0;
+                    displayImages(filesArray, index);
+                    objectAdded = true;
+                    processButton();
+                    responseMessage.innerText = message.message;
+                    responseMessage.classList.remove('hidden');
+
+                    setTimeout(() => {
+                        responseMessage.classList.add('hidden');
+                    }, 3000);
+                } catch (error) {
+                    responseMessage.innerText = 'An error occurred: ' + error.message;
+                    responseMessage.classList.remove('hidden');
+                    setTimeout(() => {
+                        responseMessage.classList.add('hidden');
+                    }, 3000);
+                }
+            } else {
+                if (document.getElementById('class-input').value.trim() === '') {
+                    responseMessage.classList.remove('hidden');
+                    responseMessage.innerText = 'Class name cannot be empty';
+                }
+                else if (filesArray.length == 0) {
+                    responseMessage.classList.remove('hidden');
+                    responseMessage.innerText = 'No images selected';
+                }
+                setTimeout(() => {
+                    responseMessage.classList.add('hidden');
+                }, 3000);
+            }
+        });
+
+        document.getElementById('process-image').addEventListener('click', async () => {
+            document.getElementById('loaderbox-process').classList.remove('hidden')
+            scrollToBottom()
+            try {
+                const response = await fetch('/train/process-images/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    objectProcessed = true;
+                    trainButton();
+                    document.getElementById('loaderbox-process').classList.add('hidden')
+                    document.getElementById('process-response').textContent = data.message;
+                    document.getElementById('process-response').classList.remove('hidden')
+                    setTimeout(() => {
+                        document.getElementById('process-response').classList.add('hidden')
+                    }, 10000);
+                } else {
+                    document.getElementById('loaderbox-process').classList.add('hidden')
+                    document.getElementById('process-response').textContent = 'An Error occured';
+                    document.getElementById('process-response').classList.remove('hidden')
+                    setTimeout(() => {
+                        document.getElementById('process-response').classList.add('hidden')
+                    }, 10000);
+                }
+            } catch (error) {
+                document.getElementById('loaderbox-process').classList.add('hidden')
+                document.getElementById('process-response').textContent = 'An Error occured' + error.message;
+                document.getElementById('process-response').classList.remove('hidden')
+                setTimeout(() => {
+                    document.getElementById('process-response').classList.add('hidden')
+                }, 10000);
+            }
+        })
+
+
+        document.getElementById('train').addEventListener('click', async () => {
+            document.getElementById('loaderbox-train').classList.remove('hidden');
+            scrollToBottom();
+
+            try {
+                const response = await fetch('/train/train-ai/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('loaderbox-train').classList.add('hidden')
+                    document.getElementById('train-response').textContent = data.message;
+                    document.getElementById('train-response').classList.remove('hidden')
+
+                    document.getElementById('train-success').classList.remove('hidden')
+
+                    document.getElementById('upload-model').classList.remove('hidden')
+
+
+                    document.getElementById('result-metrics').src = `/${data.img}`;
+
+                    scrollToBottom()
+
+                } else {
+                    document.getElementById('loaderbox-train').classList.add('hidden')
+                    document.getElementById('train-response').textContent = 'An Error occured';
+                    document.getElementById('train-response').classList.remove('hidden')
+                    scrollToBottom()
+                    setTimeout(() => {
+                        document.getElementById('train-response').classList.add('hidden')
+                    }, 10000);
+                }
+            } catch (error) {
+                document.getElementById('loaderbox-train').classList.add('hidden')
+                document.getElementById('train-response').textContent = 'An Error occured' + error.message;
+                document.getElementById('train-response').classList.remove('hidden')
+                scrollToBottom()
+                setTimeout(() => {
+                    document.getElementById('train-response').classList.add('hidden')
+                }, 10000);
+            }
+        })
+
+
+        document.getElementById('test-img').addEventListener('click', () => {
+            document.getElementById('test-ip').click();
+        })
+
+        let test_file;
+        document.getElementById('test-ip').addEventListener('change', (event) => {
+            test_file = event.target.files[0];
+            if (test_file) {
+                const fileURL = URL.createObjectURL(test_file);
+                document.getElementById('test-ip-img').src = fileURL;
+            }
+        })
+
+
+        document.getElementById('start-test').addEventListener('click', async () => {
+            const formData = new FormData()
+            console.log(test_file)
+            formData.append('file', test_file)
+            document.getElementById('test-response').textContent = 'Testing...'
+            try {
+                const response = await fetch('/train/test-ai/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: formData
+                })
+                const results = await response.json();
+                document.getElementById('test-op-img').src = `/${results.img}`
+                document.getElementById('test-response').textContent = 'Testing Successful'
+            } catch (error) {
+                document.getElementById('test-response').textContent = 'An error occured!'
+
+                setTimeout(() => {
+                    document.getElementById('test-response').innerHTML = ''
+                }, 5000);
+            }
+        })
+
+
+        document.getElementById('upload-model-btn').addEventListener('click', async () => {
+            let model_name = document.getElementById('model-name').value;
+            let model_desc = document.getElementById('model-desc').value;
+            const formData = new FormData();
+            formData.append('model-name', model_name);
+            formData.append('model-desc', model_desc);
+
+            try {
+                const response = await fetch('/train/upload-model/', {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                    },
+                    body: formData
+                });
+
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+
+                const data = await response.json();
+                document.getElementById('upload-response').textContent = data.message;
+                document.getElementById('upload-model').classList.add('hidden');
+            } catch (error) {
+                document.getElementById('upload-response').textContent = 'An error occurred: ' + error.message;
+            }
+        });
+
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,7 @@
+rembg
+moviepy
+ultralytics
+django
+opencv-python
+numpy
+pillow

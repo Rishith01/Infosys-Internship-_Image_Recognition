@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="icon" href="/static/svgs/logo.png" type="image/x-icon">
+  <title>Vision AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href='https://fonts.googleapis.com/css?family=Poppins' rel='stylesheet'>
+  <style>
+    body, main, p{
+      font-family: 'Poppins';
+    }
+
+    ::-webkit-scrollbar {
+      width: 0;
+    }
+  </style>
+</head>
+
+<body class="bg-[#1A1A1A] text-gray-300 tracking-widest">
+
+  <div class="w-full">
+    <img src='/static/svgs/landing-lg.svg' id='responsiveImage' alt="Desktop View" class="w-full h-auto">
+  </div>
+  <main class="w-screen flex-col items-center py-5">
+    <p class="lg:text-2xl text-md font-bold text-left lg:px-20 px-10 pb-2">Real-Time Object Detection with Vision of Artificial
+      Intelligence</p>
+    <p class="lg:text-2xl text-md font-bold text-left lg:px-20 px-10 pt-2">Experience Unmatched Precision and Efficiency with
+      Ease</p>
+
+
+    <button class="lg:my-10 my-5 lg:mx-20 mx-10 flex justify-between items-center hover:scale-105 transition-all"><span
+        class="bg-blue-700 text-white px-10 py-2 lg:text-xl text-md font-bold rounded-s-full" onclick=window.location.href='/detect/'>Try Now</span>
+      <span
+        class="bg-white text-blue-700 lg:p-3 px-2 px-3 py-2 lg:text-4xl text-2xl font-bold rounded-full relative -left-8 text-center">➤</span></button>
+
+    <img src="/static/svgs/man_bubble.svg" alt="detecting images" class="w-screen">
+    <div class="text-left lg:p-10 p-5">
+      <h1 class="lg:text-3xl text-2xl lg:px-10 font-black text-blue-400 tracking-widest">✦ Key Features </h3>
+        <ul class="list-disc lg:px-20 py-10 pl-5 flex flex-col gap-5 lg:text-xl text-md">
+          <li class="px-2">Detect and classify objects in images, videos, and live camera feeds for various
+            applications.</li>
+          <li class="px-2">Enjoy fast, reliable, and highly accurate object detection with the <strong>YOLO</strong> (You Only Look Once) model.</li>
+          <li class="px-2">Add new object classes by simply uploading images, allowing the model to improve over time.
+          </li>
+          <li class="px-2">Seamlessly integrate with a straightforward interface, no matter about your technical
+            expertise.
+          </li>
+          <li class="px-2">Access our platform from any device or operating system, ensuring compatibility and ease of
+            use.</li>
+        </ul>
+
+        <p class="lg:text-3xl text-2xl text-blue-400 font-bold lg:px-10 px-5 tracking-widest">Custom Detections</p>
+        <p class="lg:text-xl text-md lg:px-10 px-6 py-5">
+          Want detections on your custom objects?
+          <br>
+          Try out our model training section!
+          <br><br>
+          You can add your custom objects to the model just by uploading a few images.
+          <br>
+          Our platform's incremental learning feature allows you to enhance the model by adding new object classes
+        </p>
+        <button onclick=window.location.href='/train/'
+          class="bg-blue-700 lg:m-10 m-5 lg:py-3 py-2 lg:px-10 px-5 text-white font-semibold lg:text-xl text-md rounded-xl hover:scale-105 transition-all hover:text-gray-300" >Explore more ➤</button>
+
+        <h3 class="lg:text-3xl text-xl tracking-widest font-black text-blue-400 p-5 leading-normal">Unveiling the
+          Secrets of Object Detection</h3>
+        <p class="lg:text-xl text-md leading-normal p-5">
+          Ever wondered how our platform identifies objects so accurately?
+          <br>
+          It starts with your uploaded data – images,
+          videos, or live camera feeds. Our system processes this input to prepare it for detection.
+          <br><br>
+          At the core of our technology is the powerful You Only Look Once (<b>YOLOv8</b>) model. This advanced AI processes
+          the entire image in one go, breaking it into a grid. Each grid cell predicts bounding boxes and class
+          probabilities for objects within that cell. This allows the model to quickly and accurately find objects,
+          label them, and draw boxes around them.
+          <br>
+          We refine these detections using a technique called non-maximum suppression (NMS). This ensures we get the
+          most accurate results by eliminating duplicate detections.
+          <br><br>
+          Our system is always learning. With just a few new pictures, it can recognize new types of objects. This
+          continuous improvement means our platform remains top-notch, offering real-time, cross-device object detection
+          that is both simple and smart.
+        </p>
+
+    </div>
+  </main>
+  <script >
+
+      function setImageSrc() {
+        const image = document.getElementById('responsiveImage');
+          if (window.innerWidth <= 768) {
+              image.src = '/static/svgs/landing-sm.svg';
+          } else {
+              image.src = '/static/svgs/landing-lg.svg';
+          }
+      }
+
+      window.onload = setImageSrc;
+      window.onresize = setImageSrc; 
+  </script>
+</body>
+
+</html>
