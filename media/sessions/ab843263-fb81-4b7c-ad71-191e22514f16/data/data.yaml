@@ -1,0 +1,5 @@
+names:
+  0: cat
+path: D:\ODS\Infosys-Internship-_Image_Recognition\media\sessions\ab843263-fb81-4b7c-ad71-191e22514f16\data
+train: D:\ODS\Infosys-Internship-_Image_Recognition\media\sessions\ab843263-fb81-4b7c-ad71-191e22514f16\data/train/images
+val: D:\ODS\Infosys-Internship-_Image_Recognition\media\sessions\ab843263-fb81-4b7c-ad71-191e22514f16\data/val/images
