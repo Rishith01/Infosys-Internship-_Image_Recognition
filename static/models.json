@@ -12,6 +12,7 @@
         "Small level model for YOLOv8",
         "Medium level model for YOLOv8",
         "Able to detecte autombiles vehiles",
-        "Nano architecture vehicles detection model for 5 classes - AUTORICKSHAW< BUS, CAR, MOTORCYCLE, TRUCK"
+        "Nano architecture vehicles detection model for 5 classes - AUTORICKSHAW< BUS, CAR, MOTORCYCLE, TRUCK",
+        "Small architecture vehicles detection model for 5 classes - AUTORICKSHAW< BUS, CAR, MOTORCYCLE, TRUCK"
     ]
 }
